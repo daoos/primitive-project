@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans-4.1.xsd
+						http://www.springframework.org/schema/tx
+						http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">
+	
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="order" value="1" />
+    	<property name="ignoreUnresolvablePlaceholders" value="true" />
+		<property name="locations">
+			<list>
+				<value>classpath:configs/db/db.properties</value>
+			</list>
+		</property>
+	</bean>
+	
+	<!-- webank 库配置 start -->
+	<bean id="webankDataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${webank_jdbc.driver}" />
+		<property name="url" value="${webank_jdbc.url}" />
+		<property name="username" value="${webank_jdbc.username}" />
+		<property name="password" value="${webank_jdbc.password}" />
+		<property name="initialSize" value="${webank_jdbc.initialSize}" />
+		<property name="maxActive" value="${webank_jdbc.maxActive}" />
+		<property name="maxIdle" value="${webank_jdbc.maxIdle}" />
+		<property name="maxWait" value="${webank_jdbc.maxWait}" />
+		<property name="defaultAutoCommit" value="${webank_jdbc.defaultAutoCommit}" />
+	</bean>
+	<bean id="webanklSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="configLocation" value="classpath:mybatis/mybatis-webank-config.xml" />
+		<property name="dataSource" ref="webankDataSource" />
+	</bean>
+	<bean id="webankSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="webanklSessionFactory" />
+	</bean>
+	<bean id="webankTxManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="webankDataSource" />
+	</bean>
+	<tx:annotation-driven proxy-target-class="true" transaction-manager="webankTxManager" />
+	<!-- webank 库配置 end -->
+
+</beans>
